@@ -32,7 +32,6 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
 import com.metaring.framework.broadcast.BroadcastController;
-import com.metaring.framework.broadcast.BroadcastControllerManager;
 import com.metaring.framework.rpc.CallFunctionalityImpl;
 
 @Component
@@ -95,16 +94,14 @@ public class MetaRingSpringBootSockJSHandler extends AbstractWebSocketHandler im
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         sessions.put(session.getId(), session);
-        BroadcastControllerManager.INSTANCE.thenAcceptAsync(
-                it -> it.register(session.getId(), (message, error) -> respond(session, message, error)),
-                MetaRingAsyncExecutor);
+
+        BroadcastController.register(session.getId(), message -> respond(session, message, null));
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         sessions.remove(session.getId());
-        BroadcastControllerManager.INSTANCE.thenAcceptAsync(it -> it.unregister(session.getId()),
-                MetaRingAsyncExecutor);
+        BroadcastController.unregister(session.getId());
     }
 
     @Override
